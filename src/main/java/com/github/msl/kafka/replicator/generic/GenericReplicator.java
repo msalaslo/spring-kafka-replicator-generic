@@ -16,14 +16,6 @@ public class GenericReplicator {
 	@Autowired
 	GenericProducer producer;
 	
-	
-//	@KafkaListener(topics = "${consumer.topic.name}", containerFactory = "kafkaListenerContainerFactory")
-//	public void genericListener(@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) GenericRecord key, @Header(KafkaHeaders.RECEIVED_TIMESTAMP) Long receivedTimestamp, GenericRecord record) {
-//		log.info("Received record with key:" + key + ",  message: " + record);
-//		producer.sendIncidenceMessage(key, record);
-//	}
-	
-	
 	@KafkaListener(topics = "${consumer.topic.name}", containerFactory = "kafkaListenerContainerFactory")
 	public void avroConsumer(GenericRecord record, 
 			@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) GenericRecord key,
