@@ -1,4 +1,4 @@
-# Spring Kafka Replicator: topic consumer from one Confluent Kafka cluster and topic producer to another Confluent Kafka cluster
+# Spring Kafka Replicator: kafka consumer and kafka producer
 
 ## About
 
