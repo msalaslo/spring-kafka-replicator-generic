@@ -21,9 +21,9 @@ public class GenericProducer {
 	GenericReplicatorConfig config;
 
 	public void sendIncidenceWithResult(int partition, long timestamp, GenericRecord key, GenericRecord record) {
+		log.info("Sending record with key:" + key + ",  message: " + record + ", to topic:" + config.getProducerTopicName());
 		ListenableFuture<SendResult<GenericRecord, GenericRecord>> future = genericTemplate.send(config.getProducerTopicName(), key, record);
 		future.addCallback(new ListenableFutureCallback<SendResult<GenericRecord, GenericRecord>>() {
-
 			@Override
 			public void onSuccess(SendResult<GenericRecord, GenericRecord> result) {
 				log.info(

@@ -24,7 +24,7 @@ public class GenericReplicator {
 	        @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp){ 
 		log.info("Receiving records from topic:" + topic);
 		log.info("Received record with key:" + key + ",  message: " + record);
-		producer.sendIncidenceMessage(partition, timestamp, key, record);
+		producer.sendIncidenceWithResult(partition, timestamp, key, record);
 	}
 	
 	
