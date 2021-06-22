@@ -16,14 +16,16 @@ public class GenericReplicator {
 	@Autowired
 	GenericProducer producer;
 	
+	@Autowired
+	GenericReplicatorConfig consumerConfig;
+	
 	@KafkaListener(topics = "${consumer.topic.name}", containerFactory = "kafkaListenerContainerFactory")
 	public void avroConsumer(GenericRecord record, 
 			@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) GenericRecord key,
 	        @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition,
 	        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
 	        @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp){ 
-		log.info("Receiving records from topic:" + topic);
-		log.info("Received record with key:" + key + ",  message: " + record);
+		log.info("Received from brokers: " + consumerConfig.getConsumerBootstrapAddress() + " topic:" + topic + ",record with key:" + key + ",  message: " + record);
 		producer.sendIncidenceWithResult(partition, timestamp, key, record);
 	}
 	
