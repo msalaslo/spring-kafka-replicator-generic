@@ -15,20 +15,31 @@ public class GenericReplicator {
 
 	@Autowired
 	GenericProducer producer;
-	
+
 	@Autowired
 	GenericReplicatorConfig consumerConfig;
-	
-	@KafkaListener(topics = "${consumer.topic.name}", containerFactory = "kafkaListenerContainerFactory")
+
+//	@KafkaListener(topics = {"${consumer.topic.names}"}, containerFactory = "kafkaListenerContainerFactory")
+	@KafkaListener(topics = {"moaii.analytics.event.sum.in", "moaii.analytics.incidence.queue1", "moaii.analytics.installation.in", "moaii.analytics.predictiveModel.in", "moaii.esp.advmon.alarmlog.queue"}, containerFactory = "kafkaListenerContainerFactory")
 	public void avroConsumer(GenericRecord record, 
-			@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) GenericRecord key,
+			@Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) Integer key,
 	        @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition,
 	        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
 	        @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp){ 
+		topic = formatTopicName(topic);
 		log.info("Received from brokers: " + consumerConfig.getConsumerBootstrapAddress() + " topic:" + topic + ",record with key:" + key + ",  message: " + record);
-		producer.sendIncidenceWithResult(partition, timestamp, key, record);
+		producer.sendIncidenceWithResult(topic, partition, timestamp, key, record);
+		log.info("Sent from brokers: " + consumerConfig.getConsumerBootstrapAddress() + " topic:" + topic + ",record with key:" + key + ",  message: " + record);
+
 	}
-	
-	
+
+	private String formatTopicName(String topicName) {
+		String topic = topicName;
+		int index = topic.indexOf(",");
+		if (index > 0) {
+			topic = topic.substring(0, index);
+		}
+		return topic;
+	}
 
 }

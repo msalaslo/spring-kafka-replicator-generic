@@ -3,11 +3,14 @@ package com.github.msl.kafka.replicator.generic;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.IntegerDeserializer;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,17 +45,14 @@ public class GenericReplicatorConfig {
 	@Value(value = "${consumer.sasl.mechanism}")
 	private String consumerSaslMechanism;
 
-	@Value(value = "${consumer.topic.name}")
-	private String consumerTopicName;
+	@Value(value = "${consumer.topic.names}")
+	private List<String> consumerTopicNames;
 	
 	@Value(value = "${consumer.schema.registry.url}")
 	private String consumerSchemaRegistryUrl;
 
 	@Value(value = "${producer.bootstrapAddress}")
 	private String producerBootstrapAddress;
-
-	@Value(value = "${producer.topic.name}")
-	private String producerTopicName;
 
 	@Value(value = "${producer.security.protocol}")
 	private String producerSecurityProtocol;
@@ -75,7 +75,7 @@ public class GenericReplicatorConfig {
 		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, getConsumerBootstrapAddress());
 		props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
 		props.put(ConsumerConfig.CLIENT_ID_CONFIG, getClientId());
-		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
+		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class);
 		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
 		props.put("security.protocol", consumerSecurityProtocol);
 		props.put("sasl.mechanism", consumerSaslMechanism);
@@ -85,8 +85,8 @@ public class GenericReplicatorConfig {
 	}
 
 	@Bean
-	KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<GenericRecord, GenericRecord>> kafkaListenerContainerFactory() {
-		ConcurrentKafkaListenerContainerFactory<GenericRecord, GenericRecord> factory = new ConcurrentKafkaListenerContainerFactory<>();
+	KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<Integer, GenericRecord>> kafkaListenerContainerFactory() {
+		ConcurrentKafkaListenerContainerFactory<Integer, GenericRecord> factory = new ConcurrentKafkaListenerContainerFactory<>();
 		factory.setConsumerFactory(consumerFactory());
 		factory.setConcurrency(3);
 		factory.getContainerProperties().setPollTimeout(1000);
@@ -95,15 +95,15 @@ public class GenericReplicatorConfig {
 	}
 
 	@Bean
-	public ConsumerFactory<GenericRecord, GenericRecord> consumerFactory() {
+	public ConsumerFactory<Integer, GenericRecord> consumerFactory() {
 		return new DefaultKafkaConsumerFactory<>(getConsumerProperties());
 	}
 
 	@Bean
-	public ProducerFactory<GenericRecord, GenericRecord> genericProducerFactory() {
+	public ProducerFactory<Integer, GenericRecord> genericProducerFactory() {
 		Map<String, Object> props = new HashMap<>();
 		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, producerBootstrapAddress);
-		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
 		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
 		props.put("security.protocol", producerSecurityProtocol);
 		props.put("sasl.mechanism", producerSaslMechanism);
@@ -113,7 +113,7 @@ public class GenericReplicatorConfig {
 	}
 
 	@Bean
-	public KafkaTemplate<GenericRecord, GenericRecord> genericKafkaTemplate() {
+	public KafkaTemplate<Integer, GenericRecord> genericKafkaTemplate() {
 		return new KafkaTemplate<>(genericProducerFactory());
 	}
 	
